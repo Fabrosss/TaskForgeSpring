@@ -8,6 +8,7 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @SpringBootApplication
 @EnableJpaRepositories({"com.example.TaskForgeSpring.repository"})
@@ -29,7 +30,10 @@ public class TaskForgeSpringApplication {
 		roleHierarchy.setHierarchy(hierarchy);
 		return roleHierarchy;
 	}
-
+	@Bean
+	public HttpSessionEventPublisher httpSessionEventPublisher() {
+		return new HttpSessionEventPublisher();
+	}
 	/*@Bean
 	public DefaultWebSecurityExpressionHandler webSecurityExpressionHandler() {
 		DefaultWebSecurityExpressionHandler expressionHandler = new DefaultWebSecurityExpressionHandler();

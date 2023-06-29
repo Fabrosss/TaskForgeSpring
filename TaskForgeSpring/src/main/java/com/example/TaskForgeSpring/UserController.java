@@ -16,6 +16,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
+@CrossOrigin(origins = "http://localhost:4200")
 public class UserController {
     private final UserService userService;
     @Autowired
@@ -34,8 +35,8 @@ public class UserController {
         User user = userService.findUserById(id);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
-    @CrossOrigin(origins = "http://localhost:4200")
-    @PostMapping("login")
+
+    @PostMapping("/login")
     public Object login(@RequestBody Map<String, String> body ) {
         return userService.loginToService(body.get("userMail"), body.get("password"));
     }
