@@ -42,4 +42,15 @@ public class User {
             inverseJoinColumns = @JoinColumn(
                     name = "role_id", referencedColumnName = "ROLE_ID"))
     private Collection<Role> roles;
+
+    @ManyToMany
+    @JoinTable(
+            name="users_tasks",
+            joinColumns = @JoinColumn(
+                    name="user_id", referencedColumnName = "USER_ID"),
+            inverseJoinColumns = @JoinColumn(
+                    name="task_id", referencedColumnName = "TASK_ID"
+            )
+    )
+    private Collection<Task> tasks;
 }

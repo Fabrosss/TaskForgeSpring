@@ -32,4 +32,6 @@ public class Role {
             inverseJoinColumns = @JoinColumn(
                     name = "privilege_id", referencedColumnName = "PRIVILEGE_ID"))
     private Collection<Privilege> privileges;
+
+
 }

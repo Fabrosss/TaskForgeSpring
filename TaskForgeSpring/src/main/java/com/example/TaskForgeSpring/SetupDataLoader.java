@@ -3,9 +3,11 @@ package com.example.TaskForgeSpring;
 
 import com.example.TaskForgeSpring.models.Privilege;
 import com.example.TaskForgeSpring.models.Role;
+import com.example.TaskForgeSpring.models.Task;
 import com.example.TaskForgeSpring.models.User;
 import com.example.TaskForgeSpring.repository.PrivilegeRepository;
 import com.example.TaskForgeSpring.repository.RoleRepository;
+import com.example.TaskForgeSpring.repository.TaskRepository;
 import com.example.TaskForgeSpring.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -21,6 +23,9 @@ import java.util.List;
 @Component
 public class SetupDataLoader implements ApplicationListener<ContextRefreshedEvent> {
     private boolean alreadySetup = false;
+
+    @Autowired
+    private TaskRepository taskRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -49,16 +54,27 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
                 readPrivilege, writePrivilege);
         createRoleIfNotFound("ROLE_ADMIN", adminPrivileges);
         createRoleIfNotFound("ROLE_USER", Arrays.asList(readPrivilege, writePrivilege));
+        createTaskIfNotFound(
+                "Implementacja interfejsu",
+                "Napisać klasę implementującą interfejs do zarządzania danymi");
+        createTaskIfNotFound(
+                "Optymalizacja algorytmu sortowania",
+                "Znaleźć sposób na zoptymalizowanie sortowania złożoności O(n^2)"
+                );
+        createTaskIfNotFound("Tworzenie aplikacji mobilnej",
+                "Rozpocząć rozwój aplikacji mobilnej przy użyciu frameworka Flutter"
+                );
+        List<Task> tasks = taskRepository.findAll();
 
         Role adminRole = roleRepository.findByName("ROLE_ADMIN");
-        createUserIfNotFound("Test", Arrays.asList(adminRole));
+        createUserIfNotFound("Test", Arrays.asList(adminRole), tasks);
 
         this.alreadySetup = true;
 
     }
 
     @Transactional
-    public User createUserIfNotFound(String name, List<Role> roles) {
+    public User createUserIfNotFound(String name, List<Role> roles, List<Task> tasks) {
         User user = userRepository.findByName(name);
         if (user == null) {
             user = new User()
@@ -66,7 +82,8 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
                     .setSurname("Test")
                     .setRoles(roles)
                     .setPassword(passwordEncoder.encode("test"))
-                    .setEmail("test@test.pl");
+                    .setEmail("test@test.pl")
+                    .setTasks(tasks);
             userRepository.save(user);
         }
         return user;
@@ -95,4 +112,13 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         }
         return role;
     }
+    @Transactional
+    public Task createTaskIfNotFound(String topic, String dsc){
+        Task task = new Task()
+                .setTopic(topic)
+                .setDescription(dsc);
+        taskRepository.save(task);
+        return task;
+    }
 }
+

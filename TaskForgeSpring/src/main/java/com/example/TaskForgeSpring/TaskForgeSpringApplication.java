@@ -9,6 +9,9 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 @SpringBootApplication
 @EnableJpaRepositories({"com.example.TaskForgeSpring.repository"})
@@ -34,10 +37,14 @@ public class TaskForgeSpringApplication {
 	public HttpSessionEventPublisher httpSessionEventPublisher() {
 		return new HttpSessionEventPublisher();
 	}
-	/*@Bean
-	public DefaultWebSecurityExpressionHandler webSecurityExpressionHandler() {
-		DefaultWebSecurityExpressionHandler expressionHandler = new DefaultWebSecurityExpressionHandler();
-		expressionHandler.setRoleHierarchy(roleHierarchy());
-		return expressionHandler;
-	}*/
+	@Bean
+	public WebMvcConfigurer corsConfigurer() { //no cors
+		return new WebMvcConfigurerAdapter() {
+			@Override
+			public void addCorsMappings(CorsRegistry registry) {
+				registry.addMapping("/**")
+						.allowedMethods("HEAD", "GET", "PUT", "POST", "DELETE", "PATCH", "OPTIONS");
+			}
+		};
+	}
 }

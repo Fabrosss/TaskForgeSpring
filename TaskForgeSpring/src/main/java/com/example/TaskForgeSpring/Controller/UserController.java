@@ -1,6 +1,7 @@
-package com.example.TaskForgeSpring;
+package com.example.TaskForgeSpring.Controller;
 
 
+import com.example.TaskForgeSpring.CustomCorsConfigAnnotation;
 import com.example.TaskForgeSpring.exception.ErrorProvidedDataHandler;
 import com.example.TaskForgeSpring.models.User;
 import com.example.TaskForgeSpring.service.UserService;
@@ -16,7 +17,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
-@CrossOrigin(origins = "http://localhost:4200")
+@CustomCorsConfigAnnotation
 public class UserController {
     private final UserService userService;
     @Autowired
@@ -57,7 +58,7 @@ public class UserController {
         userService.deleteUser(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
-    @PostMapping("logout")
+    @PostMapping("/logout")
     public Object logout() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = "";
