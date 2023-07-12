@@ -4,6 +4,7 @@ package com.example.TaskForgeSpring.service;
 import com.example.TaskForgeSpring.exception.ErrorProvidedDataHandler;
 import com.example.TaskForgeSpring.exception.UserNotFoundException;
 import com.example.TaskForgeSpring.mapper.UserDTOMapper;
+import com.example.TaskForgeSpring.model.DTO.UserDTO;
 import com.example.TaskForgeSpring.models.Role;
 import com.example.TaskForgeSpring.models.User;
 import com.example.TaskForgeSpring.repository.RoleRepository;
@@ -60,9 +61,11 @@ public class UserService {
         }
         return user;
     }
-    public User findUserById(Long id){
-        return userRepository.findUserById(id).orElseThrow(
+    public UserDTO findUserById(Long id){
+        User user = userRepository.findUserById(id).orElseThrow(
                 () -> new UserNotFoundException("User by id " + id + " was not found"));
+        UserDTO userDTO = userDTOMapper.apply(user);
+        return userDTO;
     }
     public void deleteUser(Long id){
         userRepository.deleteEmployeeById(id);

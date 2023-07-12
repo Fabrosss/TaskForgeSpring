@@ -3,6 +3,7 @@ package com.example.TaskForgeSpring.Controller;
 
 import com.example.TaskForgeSpring.CustomCorsConfigAnnotation;
 import com.example.TaskForgeSpring.exception.ErrorProvidedDataHandler;
+import com.example.TaskForgeSpring.model.DTO.UserDTO;
 import com.example.TaskForgeSpring.models.User;
 import com.example.TaskForgeSpring.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +33,8 @@ public class UserController {
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
     @GetMapping("/find/{id}")
-    public ResponseEntity<User> geUserById(@PathVariable("id") Long id) {
-        User user = userService.findUserById(id);
+    public ResponseEntity<UserDTO> geUserById(@PathVariable("id") Long id) {
+        UserDTO user = userService.findUserById(id);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
