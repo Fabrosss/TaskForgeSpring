@@ -10,8 +10,12 @@ public class TaskDTOMapper implements Function<Task, TaskDTO> {
     @Override
     public TaskDTO apply(Task task){
         return new TaskDTO(
+                task.getId(),
                 task.getTopic(),
-                task.getDescription()
+                task.getDescription(),
+                task.getHours(),
+                task.getStartingDate(),
+                task.getEndingDate()
         );
     }
 }

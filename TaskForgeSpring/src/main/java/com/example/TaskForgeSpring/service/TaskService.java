@@ -43,11 +43,19 @@ public class TaskService {
         User user = this.userRepository.findUserById(userID).orElseThrow(
                 () -> new UserNotFoundException("User by id " + userID + " was not found"));
         Collection<Task> tasks = user.getTasks(); // Pobierz listę zadań z użytkownika
-
         Collection<TaskDTO> taskDTOs = tasks.stream()
                 .map(taskDTOMapper::apply) // Mapowanie na TaskDTO za pomocą taskDTOMapper
                 .collect(Collectors.toList()); // Zebranie wyników do listy
 
         return taskDTOs;
+    }
+
+    public Task editTask(TaskDTO task) {
+        Task taskToUpdate = taskRepository.findById(task.id());
+        return taskRepository.save(taskToUpdate);
+    }
+    public TaskDTO getTaskById(long id) {
+        Task task = taskRepository.findById(id);
+        return taskDTOMapper.apply(task);
     }
 }

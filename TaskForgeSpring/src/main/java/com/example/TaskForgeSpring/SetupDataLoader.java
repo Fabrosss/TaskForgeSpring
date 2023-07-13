@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -56,13 +57,23 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         createRoleIfNotFound("ROLE_USER", Arrays.asList(readPrivilege, writePrivilege));
         createTaskIfNotFound(
                 "Implementacja interfejsu",
-                "Napisać klasę implementującą interfejs do zarządzania danymi");
+                "Napisać klasę implementującą interfejs do zarządzania danymi",
+                8L,
+                LocalDate.of(2023,7,8),
+                LocalDate.of(2023,7,15)
+                );
         createTaskIfNotFound(
                 "Optymalizacja algorytmu sortowania",
-                "Znaleźć sposób na zoptymalizowanie sortowania złożoności O(n^2)"
+                "Znaleźć sposób na zoptymalizowanie sortowania złożoności O(n^2)",
+                4L,
+                LocalDate.of(2023,7,12),
+                LocalDate.of(2023,7,18)
                 );
         createTaskIfNotFound("Tworzenie aplikacji mobilnej",
-                "Rozpocząć rozwój aplikacji mobilnej przy użyciu frameworka Flutter"
+                "Rozpocząć rozwój aplikacji mobilnej przy użyciu frameworka Flutter",
+                8L,
+                LocalDate.of(2023,7,13),
+                LocalDate.of(2023,7,21)
                 );
         List<Task> tasks = taskRepository.findAll();
 
@@ -113,10 +124,13 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         return role;
     }
     @Transactional
-    public Task createTaskIfNotFound(String topic, String dsc){
+    public Task createTaskIfNotFound(String topic, String dsc, Long hours, LocalDate startingDate, LocalDate endingDate){
         Task task = new Task()
                 .setTopic(topic)
-                .setDescription(dsc);
+                .setDescription(dsc)
+                .setHours(hours)
+                .setStartingDate(startingDate)
+                .setEndingDate(endingDate);
         taskRepository.save(task);
         return task;
     }
