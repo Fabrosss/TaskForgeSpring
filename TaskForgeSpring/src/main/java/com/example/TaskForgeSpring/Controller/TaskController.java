@@ -29,15 +29,24 @@ public class TaskController {
         TaskDTO taskDTO = taskService.getTaskById(id);
         return new ResponseEntity<>(taskDTO, HttpStatus.OK);
     }
+    @GetMapping("/user/{id}/{status}")
+    public ResponseEntity<Collection<TaskDTO>> getTaskByUserStatus(
+            @PathVariable("id") Long id,
+            @PathVariable("status") String status){
+        Collection<TaskDTO> tasks = taskService.getUserTaskByStatus(id, status);
+        return new ResponseEntity<>(tasks, HttpStatus.OK);
+    }
     @GetMapping("/user/{id}")
-    public ResponseEntity<Collection<TaskDTO>> getTaskByUser(@PathVariable("id") Long id){
+    public ResponseEntity<Collection<TaskDTO>> getTaskByUser(
+            @PathVariable("id") Long id
+            ){
         Collection<TaskDTO> tasks = taskService.getUserTask(id);
         return new ResponseEntity<>(tasks, HttpStatus.OK);
     }
     @PutMapping("/edit")
-    public ResponseEntity<TaskDTO> editTask(@RequestBody TaskDTO task){
-        taskService.editTask(task);
-        return new ResponseEntity<>(task, HttpStatus.OK);
+    public ResponseEntity<Task> editTask(@RequestBody Task task){
+        Task taskEdited = taskService.editTask(task);
+        return new ResponseEntity<>(taskEdited, HttpStatus.OK);
     }
 
 }

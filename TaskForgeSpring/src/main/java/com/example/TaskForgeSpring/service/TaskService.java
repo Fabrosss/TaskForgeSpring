@@ -9,8 +9,11 @@ import com.example.TaskForgeSpring.repository.TaskRepository;
 import com.example.TaskForgeSpring.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.time.LocalDate;
 
+import java.time.ZoneId;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,17 +45,59 @@ public class TaskService {
     public Collection<TaskDTO> getUserTask(long userID) {
         User user = this.userRepository.findUserById(userID).orElseThrow(
                 () -> new UserNotFoundException("User by id " + userID + " was not found"));
-        Collection<Task> tasks = user.getTasks(); // Pobierz listę zadań z użytkownika
+        Collection<Task> tasks = user.getTasks();
         Collection<TaskDTO> taskDTOs = tasks.stream()
-                .map(taskDTOMapper::apply) // Mapowanie na TaskDTO za pomocą taskDTOMapper
-                .collect(Collectors.toList()); // Zebranie wyników do listy
+                .map(taskDTOMapper)
+                .collect(Collectors.toList());
 
         return taskDTOs;
     }
+    public Collection<TaskDTO> getUserTaskByStatus(long userID, String status) {
+        User user = this.userRepository.findUserById(userID).orElseThrow(
+                () -> new UserNotFoundException("User by id " + userID + " was not found"));
+        Collection<Task> tasks = user.getTasks();
+        LocalDate today = LocalDate.now();
 
-    public Task editTask(TaskDTO task) {
-        Task taskToUpdate = taskRepository.findById(task.id());
-        return taskRepository.save(taskToUpdate);
+        Collection<TaskDTO> taskDTOs = switch (status) {
+            case "present" -> tasks.stream()
+                    .filter(task -> !task.getStartingDate().isAfter(today) &&
+                            !task.getEndingDate().isBefore(today))
+                    .map(taskDTOMapper)
+                    .collect(Collectors.toList());
+            case "past" -> tasks.stream()
+                    .filter(task -> task.getEndingDate().isBefore(today))
+                    .map(taskDTOMapper)
+                    .collect(Collectors.toList());
+            case "future" -> tasks.stream()
+                    .filter(task -> task.getStartingDate().isAfter(today))
+                    .map(taskDTOMapper)
+                    .collect(Collectors.toList());
+            default -> tasks.stream()
+                    .map(taskDTOMapper)
+                    .collect(Collectors.toList());
+        };
+        return taskDTOs;
+    }
+    public Task editTask(Task task) {
+        java.util.Date date = new java.util.Date();
+        Task taskToUpdate = taskRepository.findById(task.getId());
+
+        if (taskToUpdate != null) {
+            // Aktualizuj właściwości obiektu taskToUpdate na podstawie obiektu task
+            taskToUpdate.setTopic(task.getTopic());
+            taskToUpdate.setDescription(task.getDescription());
+            taskToUpdate.setHours(task.getHours());
+            taskToUpdate.setStartingDate(task.getStartingDate());
+            taskToUpdate.setEndingDate(task.getEndingDate());
+
+            taskToUpdate = taskRepository.save(taskToUpdate); // Zapisz zaktualizowany obiekt do bazy danych
+            System.out.println("[" + date + "]" + "[TASK]: " + taskToUpdate.getId() + " was updated.");
+        } else {
+            // Obsłuż przypadek, gdy obiekt taskToUpdate nie został znaleziony w bazie danych
+            System.out.println("[" + date + "]" + "[TASK]: Task with ID " + task.getId() + " not found.");
+        }
+
+        return taskToUpdate;
     }
     public TaskDTO getTaskById(long id) {
         Task task = taskRepository.findById(id);
