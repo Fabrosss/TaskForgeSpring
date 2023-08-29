@@ -4,6 +4,7 @@ package com.example.TaskForgeSpring.service;
 import com.example.TaskForgeSpring.exception.ErrorProvidedDataHandler;
 import com.example.TaskForgeSpring.exception.UserNotFoundException;
 import com.example.TaskForgeSpring.mapper.UserDTOMapper;
+import com.example.TaskForgeSpring.model.DTO.NewUserDTO;
 import com.example.TaskForgeSpring.model.DTO.UserDTO;
 import com.example.TaskForgeSpring.models.Role;
 import com.example.TaskForgeSpring.models.User;
@@ -55,7 +56,7 @@ public class UserService {
     }
 
     public User findUserByUserName(String name) throws UsernameNotFoundException {
-        User user = userRepository.findByName(name);
+        User user = this.userRepository.findByName(name);
         if(user == null){
             throw new UsernameNotFoundException("User not found " + name);
         }
@@ -68,32 +69,51 @@ public class UserService {
         return userDTO;
     }
     public void deleteUser(Long id){
-        userRepository.deleteEmployeeById(id);
+        userRepository.deleteUserById(id);
     }
 
     public Object loginToService(String userMail, String password) {
         ErrorProvidedDataHandler errorProvidedDataHandler = new ErrorProvidedDataHandler();
-
+        System.out.println("userMail" + userMail + "password" + password);
         User user = userRepository.findByEmail(userMail);
         if (user == null) {
             errorProvidedDataHandler.setError("3028");
             return errorProvidedDataHandler;
-        }
-        else {
+        } else {
             if (passwordEncoder.matches(password, user.getPassword())) {
                 java.util.Date date = new java.util.Date();
                 myUserDetailsService.loadUserByUsername(userMail);
                 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-                String currentPrincipalName =  authentication.getName();
-                System.out.println("["+date+"]"+"[USER]: " + currentPrincipalName + " logged into service");
+                // Authentication authentication =  authenticationMenager.authenticate(
+                /*  new UsernamePasswordAuthenticationToken( userMail, password));*/
+                String currentPrincipalName = authentication.getName();
+                System.out.println("[" + date + "]" + "[USER]: " + currentPrincipalName + " logged into service");
                 return userDTOMapper.apply(user);
-            }
-            else {
+            } else {
                 errorProvidedDataHandler.setError("3029");
                 return errorProvidedDataHandler;
             }
         }
-
+    }
+    public void createNewUser(NewUserDTO user){
+        User newUser = userRepository.findByEmail(user.getEmail());
+        List<Role> matchingRoles = new ArrayList<>();
+        for (String roleName : user.getRoles()) {
+            Role role = roleRepository.findByName(roleName);
+            if (role != null) {
+                matchingRoles.add(role);
+            }
+        }
+        if (newUser == null) {
+            User userToSave = new User()
+                    .setName(user.getName())
+                    .setSurname(user.getSurname())
+                    .setRoles(matchingRoles)
+                    .setPassword(passwordEncoder.encode(user.getPassword()))
+                    .setEmail(user.getEmail());
+            userRepository.save(userToSave);
+        }
+        System.out.println(newUser);
     }
 }
 

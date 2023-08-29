@@ -9,6 +9,8 @@ import com.example.TaskForgeSpring.repository.TaskRepository;
 import com.example.TaskForgeSpring.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.transaction.Transactional;
 import java.time.LocalDate;
 
 import java.time.ZoneId;
@@ -37,9 +39,18 @@ public class TaskService {
     public Task updateTask(Task task) {
         return taskRepository.save(task);
     }
-
+    public List<Task> findAllTasks() {
+        return taskRepository.findAll();
+    }
+    @Transactional
     public void deleteTask(long taskId) {
-        taskRepository.deleteTaskById(taskId);
+        Task taskToDelete = taskRepository.findById(taskId);
+        if (taskToDelete != null) {
+            for (User user : taskToDelete.getUsers()) {
+                user.getTasks().remove(taskToDelete);
+            }
+            taskRepository.delete(taskToDelete);
+        }
     }
 
     public Collection<TaskDTO> getUserTask(long userID) {
@@ -50,6 +61,30 @@ public class TaskService {
                 .map(taskDTOMapper)
                 .collect(Collectors.toList());
 
+        return taskDTOs;
+    }
+    public Collection<TaskDTO> getAllTasksByStatus(String status){
+        Collection<Task> tasks = taskRepository.findAll();
+        LocalDate today = LocalDate.now();
+
+        Collection<TaskDTO> taskDTOs = switch (status) {
+            case "present" -> tasks.stream()
+                    .filter(task -> !task.getStartingDate().isAfter(today) &&
+                            !task.getEndingDate().isBefore(today))
+                    .map(taskDTOMapper)
+                    .collect(Collectors.toList());
+            case "past" -> tasks.stream()
+                    .filter(task -> task.getEndingDate().isBefore(today))
+                    .map(taskDTOMapper)
+                    .collect(Collectors.toList());
+            case "future" -> tasks.stream()
+                    .filter(task -> task.getStartingDate().isAfter(today))
+                    .map(taskDTOMapper)
+                    .collect(Collectors.toList());
+            default -> tasks.stream()
+                    .map(taskDTOMapper)
+                    .collect(Collectors.toList());
+        };
         return taskDTOs;
     }
     public Collection<TaskDTO> getUserTaskByStatus(long userID, String status) {
@@ -102,5 +137,15 @@ public class TaskService {
     public TaskDTO getTaskById(long id) {
         Task task = taskRepository.findById(id);
         return taskDTOMapper.apply(task);
+    }
+
+    public void createTask(String username, Task task) {
+        User user = this.userRepository.findByName(username);
+        if (user == null) {
+            throw new UserNotFoundException("User with username " + username + " not found.");
+        }
+        taskRepository.save(task);
+        user.addTask(task);
+        userRepository.save(user);
     }
 }

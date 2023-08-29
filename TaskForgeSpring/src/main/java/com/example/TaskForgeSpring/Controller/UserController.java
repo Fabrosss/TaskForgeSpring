@@ -3,12 +3,14 @@ package com.example.TaskForgeSpring.Controller;
 
 import com.example.TaskForgeSpring.CustomCorsConfigAnnotation;
 import com.example.TaskForgeSpring.exception.ErrorProvidedDataHandler;
+import com.example.TaskForgeSpring.model.DTO.NewUserDTO;
 import com.example.TaskForgeSpring.model.DTO.UserDTO;
 import com.example.TaskForgeSpring.models.User;
 import com.example.TaskForgeSpring.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +22,8 @@ import java.util.Map;
 @RequestMapping("/user")
 @CustomCorsConfigAnnotation
 public class UserController {
+    @Autowired
+    AuthenticationManager authenticationManager;
     private final UserService userService;
     @Autowired
     HttpSession httpSession ;
@@ -40,7 +44,7 @@ public class UserController {
 
     @PostMapping("/login")
     public Object login(@RequestBody Map<String, String> body ) {
-        return userService.loginToService(body.get("userMail"), body.get("password"));
+        return userService.loginToService(body.get("email"), body.get("password"));
     }
 
     @PostMapping("/add")
@@ -75,6 +79,11 @@ public class UserController {
         errorProvidedDataHandler.setError("2001");
         httpSession.invalidate();
         return errorProvidedDataHandler;
+    }
+    @PutMapping("/newUser")
+    public ResponseEntity<UserDTO> newUser (@RequestBody NewUserDTO user){
+        userService.createNewUser(user);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 }

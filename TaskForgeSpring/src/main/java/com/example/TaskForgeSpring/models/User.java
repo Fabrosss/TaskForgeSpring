@@ -53,4 +53,8 @@ public class User {
             )
     )
     private Collection<Task> tasks;
+
+    public void addTask(Task task) {
+        tasks.add(task);
+    }
 }

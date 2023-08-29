@@ -1,11 +1,9 @@
 package com.example.TaskForgeSpring;
 
 
-import com.example.TaskForgeSpring.models.Privilege;
 import com.example.TaskForgeSpring.models.Role;
 import com.example.TaskForgeSpring.models.Task;
 import com.example.TaskForgeSpring.models.User;
-import com.example.TaskForgeSpring.repository.PrivilegeRepository;
 import com.example.TaskForgeSpring.repository.RoleRepository;
 import com.example.TaskForgeSpring.repository.TaskRepository;
 import com.example.TaskForgeSpring.repository.UserRepository;
@@ -17,8 +15,8 @@ import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 @Component
@@ -34,8 +32,6 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     @Autowired
     private RoleRepository roleRepository;
 
-    @Autowired
-    private PrivilegeRepository privilegeRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -46,15 +42,10 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         if(alreadySetup)
             return;
 
-        Privilege readPrivilege
-                = createPrivilageIfNotFound("READ_PRIVILEGE");
-        Privilege writePrivilege
-                = createPrivilageIfNotFound("WRITE_PRIVILEGE");
 
-        List<Privilege> adminPrivileges = Arrays.asList(
-                readPrivilege, writePrivilege);
-        createRoleIfNotFound("ROLE_ADMIN", adminPrivileges);
-        createRoleIfNotFound("ROLE_USER", Arrays.asList(readPrivilege, writePrivilege));
+        createRoleIfNotFound("ADMIN");
+        createRoleIfNotFound("USER");
+
         createTaskIfNotFound(
                 "Implementacja interfejsu",
                 "Napisać klasę implementującą interfejs do zarządzania danymi",
@@ -76,16 +67,21 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
                 LocalDate.of(2023,7,21)
                 );
         List<Task> tasks = taskRepository.findAll();
+        Role adminRole = roleRepository.findByName("ADMIN");
+        Role userRole = roleRepository.findByName("USER");
+        Task task2 = taskRepository.findByTopic("Optymalizacja algorytmu sortowania");
 
-        Role adminRole = roleRepository.findByName("ROLE_ADMIN");
-        createUserIfNotFound("Test", Arrays.asList(adminRole), tasks);
-
+        List<Task> taskList = new ArrayList<>();
+        if (task2 != null) {
+            taskList.add(task2);
+        }
+        createUserIfNotFound("Test", "test@test.pl", Arrays.asList(adminRole), tasks);
+        createUserIfNotFound("edytor", "edytor@test.pl", Arrays.asList(userRole), taskList);
         this.alreadySetup = true;
-
     }
 
     @Transactional
-    public User createUserIfNotFound(String name, List<Role> roles, List<Task> tasks) {
+    public User createUserIfNotFound(String name, String email, List<Role> roles, List<Task> tasks) {
         User user = userRepository.findByName(name);
         if (user == null) {
             user = new User()
@@ -93,32 +89,22 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
                     .setSurname("Test")
                     .setRoles(roles)
                     .setPassword(passwordEncoder.encode("test"))
-                    .setEmail("test@test.pl")
+                    .setEmail(email)
                     .setTasks(tasks);
             userRepository.save(user);
         }
         return user;
     }
 
-    @Transactional
-    public Privilege createPrivilageIfNotFound(String name) {
-        Privilege privilege = privilegeRepository.findByName(name);
-        if(privilege == null){
-            privilege = new Privilege()
-                    .setName(name);
-            privilegeRepository.save(privilege);
-        }
-        return privilege;
-    }
+
 
     @Transactional
     public Role createRoleIfNotFound(
-            String name, Collection<Privilege> privileges){
+            String name){
         Role role = roleRepository.findByName(name);
         if(role == null) {
             role = new Role()
-                    .setName(name)
-                    .setPrivileges(privileges);
+                    .setName(name);
             roleRepository.save(role);
         }
         return role;

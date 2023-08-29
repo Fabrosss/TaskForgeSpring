@@ -1,7 +1,6 @@
 package com.example.TaskForgeSpring.service;
 
 
-import com.example.TaskForgeSpring.models.Privilege;
 import com.example.TaskForgeSpring.models.Role;
 import com.example.TaskForgeSpring.models.User;
 import com.example.TaskForgeSpring.repository.RoleRepository;
@@ -37,31 +36,27 @@ public class MyUserDetailsService implements UserDetailsService {
 
 
         }
-        log.info("User of email {} logged in", mail);
+        log.info("User of email {} logged in ", mail );
+        org.springframework.security.core.userdetails.User mojamama = new org.springframework.security.core.userdetails.User(user.getName(), user.getPassword(), true, true, true, true, getAuthorities(user.getRoles()));
+        log.info("Moja mama to: {}", mojamama);
         return new org.springframework.security.core.userdetails.User(user.getName(), user.getPassword(), true, true, true, true, getAuthorities(user.getRoles()));
     }
-
     private Collection<? extends GrantedAuthority> getAuthorities(Collection<Role> roles) {
-        return getGrantedAuthorities(getPrivileges(roles));
+        return getGrantedAuthorities(getRoles(roles));
     }
 
-    private List<String> getPrivileges(Collection<Role> roles) {
-        List<String> privileges = new ArrayList<>();
-        List<Privilege> collection = new ArrayList<>();
+    private List<String> getRoles (Collection<Role> roles) {
+        List<String> newRoles = new ArrayList<>();
         for (Role role : roles) {
-            privileges.add(role.getName());
-            collection.addAll(role.getPrivileges());
+            newRoles.add(role.getName());
         }
-        for (Privilege item : collection) {
-            privileges.add(item.getName());
-        }
-        return privileges;
+        return newRoles;
     }
-
-    private List<GrantedAuthority> getGrantedAuthorities(List<String> privileges) {
+    private List<GrantedAuthority> getGrantedAuthorities(List<String> roles) {
         List<GrantedAuthority> authorities = new ArrayList<>();
-        for (String privilege : privileges) {
-            authorities.add(new SimpleGrantedAuthority(privilege));
+        System.out.println(roles);
+        for (String role : roles) {
+            authorities.add(new SimpleGrantedAuthority(role));
         }
         return authorities;
     }

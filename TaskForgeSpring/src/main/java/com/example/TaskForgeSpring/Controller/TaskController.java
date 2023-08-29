@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/task")
@@ -48,5 +49,19 @@ public class TaskController {
         Task taskEdited = taskService.editTask(task);
         return new ResponseEntity<>(taskEdited, HttpStatus.OK);
     }
-
+    @PutMapping("/new/{name}")
+    public ResponseEntity<Task> newTask(@PathVariable("name") String name, @RequestBody Task task){
+        taskService.createTask(name, task);
+        return new ResponseEntity<>(task, HttpStatus.OK);
+    }
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Task> deleteTask(@PathVariable("id") Long id){
+        taskService.deleteTask(id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+    @GetMapping("/allTasks/{status}")
+    public ResponseEntity<Collection<TaskDTO>> getAllTask(@PathVariable("status") String status){
+        Collection<TaskDTO> tasks = taskService.getAllTasksByStatus(status);
+        return new ResponseEntity<>(tasks, HttpStatus.OK);
+    }
 }
