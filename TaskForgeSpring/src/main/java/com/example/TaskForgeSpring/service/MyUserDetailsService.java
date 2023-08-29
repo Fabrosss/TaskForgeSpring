@@ -24,8 +24,6 @@ public class MyUserDetailsService implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private RoleRepository roleRepository;
 
     @Override
     public UserDetails loadUserByUsername(String mail) throws UsernameNotFoundException {
@@ -37,8 +35,6 @@ public class MyUserDetailsService implements UserDetailsService {
 
         }
         log.info("User of email {} logged in ", mail );
-        org.springframework.security.core.userdetails.User mojamama = new org.springframework.security.core.userdetails.User(user.getName(), user.getPassword(), true, true, true, true, getAuthorities(user.getRoles()));
-        log.info("Moja mama to: {}", mojamama);
         return new org.springframework.security.core.userdetails.User(user.getName(), user.getPassword(), true, true, true, true, getAuthorities(user.getRoles()));
     }
     private Collection<? extends GrantedAuthority> getAuthorities(Collection<Role> roles) {
